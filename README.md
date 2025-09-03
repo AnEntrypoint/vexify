@@ -104,7 +104,7 @@ const store = new VecStore({
   embedder, 
   search: new CosineSearchAlgorithm()
 });
-// No initialization needed for simple search algorithms
+await store.initialize(); // Don't forget to initialize!
 ```
 
 ## API Reference
