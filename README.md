@@ -1,4 +1,4 @@
-# VecStore.js
+# VecStore-js
 
 **A simple, fast, and pluggable vector database for the browser.**
 
