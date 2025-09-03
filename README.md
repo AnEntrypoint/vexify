@@ -2,7 +2,7 @@
 
 **A simple, fast, and pluggable vector database for the browser.**
 
-VecStore.js brings the power of local, privacy-preserving semantic search to your client-side applications. It uses local embeddings and stores data directly in the user's browser via IndexedDB, making it perfect for offline-first AI features, browser extensions, and web apps where data privacy is critical.
+VecStore-js brings the power of local, privacy-preserving semantic search to your client-side applications. It uses local embeddings and stores data directly in the user's browser via IndexedDB, making it perfect for offline-first AI features, browser extensions, and web apps where data privacy is critical.
 
 [![NPM](https://img.shields.io/npm/v/vecstore-js)](https://www.npmjs.com/package/vecstore-js)
 [![License](https://img.shields.io/npm/l/vecstore-js)](https://github.com/your-username/your-repo-name/blob/main/LICENSE)
