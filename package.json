@@ -14,11 +14,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/your-username/your-repo-name.git"
+        "url": "https://github.com/your-username/vecstore-js.git"
     },
-    "homepage": "https://github.com/your-username/your-repo-name#readme",
+    "homepage": "https://github.com/your-username/vecstore-js#readme",
     "bugs": {
-        "url": "https://github.com/your-username/your-repo-name/issues"
+        "url": "https://github.com/your-username/vecstore-js/issues"
     },
     "keywords": [
         "vector",
