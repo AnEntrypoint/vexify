@@ -1,0 +1,14 @@
+./node_modules
+./dist
+./package-lock.json
+./README.md
+./package.json
+./tsconfig.json
+./test
+
+./test
+./src
+./test
+package-lock.json
+node_modules/
+dist/
