@@ -1,6 +1,6 @@
 {
     "name": "vecstore-js",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "A pluggable, browser-native vector database using IndexedDB with support for HNSW and local embeddings.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
