@@ -1,6 +1,6 @@
 {
     "name": "vecstore-js",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "A pluggable, browser-native vector database using IndexedDB with support for HNSW and local embeddings.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -42,6 +42,7 @@
     },
     "dependencies": {
         "@xenova/transformers": "^2.17.2",
-        "hnswlib-wasm": "^0.8.2"
+        "hnswlib-wasm": "^0.8.2",
+        "idb": "^8.0.3"
     }
 }
