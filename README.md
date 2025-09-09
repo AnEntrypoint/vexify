@@ -1,6 +1,6 @@
 # VecStore-js
 
-**A simple, fast, and pluggable vector database for the browser.**
+**A simple, fast, and pluggable vector storage for the browser.**
 
 VecStore-js brings the power of local, privacy-preserving semantic search to your client-side applications. It uses local embeddings and stores data directly in the user's browser via IndexedDB, making it perfect for offline-first AI features, browser extensions, and web apps where data privacy is critical.
 
