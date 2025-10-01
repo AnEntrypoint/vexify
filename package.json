@@ -1,10 +1,10 @@
 {
-    "name": "vecstore-js",
-    "version": "0.1.2",
-    "description": "A pluggable Node.js vector database using SQLite with support for HNSW and local embeddings.",
+    "name": "vexify",
+    "version": "0.2.0",
+    "description": "Portable vector database with auto-installing Ollama embeddings. Zero-config semantic search via SQLite.",
     "main": "lib/index.js",
     "bin": {
-        "vecstore-js": "./lib/bin/cli.js"
+        "vexify": "./lib/bin/cli.js"
     },
     "files": [
         "lib"
@@ -12,23 +12,25 @@
     "scripts": {},
     "repository": {
         "type": "git",
-        "url": "https://github.com/steve-aldrin/vecstore-js.git"
+        "url": "https://github.com/steve-aldrin/vexify.git"
     },
-    "homepage": "https://github.com/steve-aldrin/vecstore-js#readme",
+    "homepage": "https://github.com/steve-aldrin/vexify#readme",
     "bugs": {
-        "url": "https://github.com/steve-aldrin/vecstore-js/issues"
+        "url": "https://github.com/steve-aldrin/vexify/issues"
     },
     "keywords": [
         "vector",
         "database",
         "vector search",
         "semantic search",
-        "hnsw",
         "embeddings",
-        "nodejs",
+        "ollama",
+        "embeddinggemma",
         "sqlite",
         "ai",
-        "machine learning"
+        "machine learning",
+        "rag",
+        "portable"
     ],
     "author": "Steve Aldrin",
     "license": "MIT",
