@@ -43,6 +43,10 @@
       "^5.2.1"
     ],
     [
+      "onnxruntime-web",
+      "^1.23.0"
+    ],
+    [
       "papaparse",
       "^5.5.3"
     ],
@@ -113,6 +117,7 @@
       "defaults.js",
       "web.js",
       "gemma.js",
+      "ollama.js",
       "transformer.js",
       "index.js",
       "base.js",
@@ -167,5 +172,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759323918405
+  "lastAnalyzed": 1759324537167
 }
