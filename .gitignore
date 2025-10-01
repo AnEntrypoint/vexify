@@ -7,3 +7,4 @@ package-lock.json
 glootie/.caveats.txt
 glootie/.mcp-file-analysis-metadata.json
 IMPLEMENTATION_SUMMARY.md
+test-crawl/

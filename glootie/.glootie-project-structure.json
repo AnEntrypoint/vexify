@@ -5,8 +5,7 @@
     "markdown",
     "unknown",
     "json",
-    "javascript",
-    "html"
+    "javascript"
   ],
   "buildTools": [],
   "packageManagers": [
@@ -85,7 +84,6 @@
       "adapters",
       "bin",
       "config",
-      "crawlers",
       "embedders",
       "processors",
       "readers",
@@ -105,9 +103,8 @@
       "sqlite.js",
       "cli.js",
       "defaults.js",
-      "index.js",
-      "web.js",
       "transformer.js",
+      "index.js",
       "base.js",
       "csv.js",
       "docx.js",
@@ -123,9 +120,7 @@
       "vecstore-factory.js",
       "vecstore.js",
       "package-lock.json",
-      "package.json",
-      "wcostream.db",
-      "wcostream.html"
+      "package.json"
     ],
     "configFiles": [
       ".gitignore",
@@ -152,5 +147,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759321979731
+  "lastAnalyzed": 1759322325361
 }
