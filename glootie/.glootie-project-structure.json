@@ -132,8 +132,6 @@
       "vecstore.js",
       "package-lock.json",
       "package.json",
-      "test-auto.db",
-      "test-autosetup.db",
       "cartoon-list.html",
       "contact.html",
       "dubbed-anime-list.html",
@@ -168,5 +166,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759328256017
+  "lastAnalyzed": 1759329448613
 }
