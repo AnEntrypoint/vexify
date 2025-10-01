@@ -31,6 +31,10 @@
       "^4.4.0"
     ],
     [
+      "jsdom",
+      "^25.0.1"
+    ],
+    [
       "node-html-markdown",
       "^1.3.0"
     ],
@@ -53,6 +57,14 @@
     [
       "playwright",
       "^1.55.1"
+    ],
+    [
+      "playwright-extra",
+      "^4.3.6"
+    ],
+    [
+      "puppeteer-extra-plugin-stealth",
+      "^2.11.2"
     ],
     [
       "sqlite-vec",
@@ -169,5 +181,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759352183411
+  "lastAnalyzed": 1759355443268
 }
