@@ -82,9 +82,11 @@
       ".git",
       ".github",
       ".glootie",
+      ".transformers-cache",
       "backups",
       "glootie",
       ".mcp-metadata",
+      "code_search_index",
       "lib",
       "adapters",
       "bin",
@@ -104,6 +106,7 @@
       "IMPLEMENTATION_SUMMARY.md",
       "LICENSE",
       "README.md",
+      "cuda-keyring_1.1-1_all.deb",
       ".caveats.txt",
       ".glootie-project-structure.json",
       ".mcp-file-analysis-metadata.json",
@@ -166,5 +169,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759329448613
+  "lastAnalyzed": 1759351453737
 }
