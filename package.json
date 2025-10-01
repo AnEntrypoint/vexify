@@ -45,6 +45,8 @@
         "pdf-to-img": "^5.0.0",
         "pdfjs-dist": "^5.4.149",
         "playwright": "^1.55.1",
+        "playwright-extra": "^4.3.6",
+        "puppeteer-extra-plugin-stealth": "^2.11.2",
         "sqlite-vec": "^0.1.7-alpha.2",
         "tesseract.js": "^6.0.1",
         "turndown": "^7.2.1",
