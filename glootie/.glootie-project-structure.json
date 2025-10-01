@@ -126,6 +126,7 @@
       "cosine.js",
       "folder-sync.js",
       "pdf-embedder.js",
+      "updater.js",
       "vecstore-factory.js",
       "vecstore.js",
       "package-lock.json",
@@ -164,5 +165,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759322853934
+  "lastAnalyzed": 1759323208938
 }
