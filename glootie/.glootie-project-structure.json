@@ -19,10 +19,6 @@
       "^0.6.0"
     ],
     [
-      "@xenova/transformers",
-      "^2.17.2"
-    ],
-    [
       "better-sqlite3",
       "^12.4.1"
     ],
@@ -41,10 +37,6 @@
     [
       "officeparser",
       "^5.2.1"
-    ],
-    [
-      "onnxruntime-web",
-      "^1.23.0"
     ],
     [
       "papaparse",
@@ -77,6 +69,10 @@
     [
       "unpdf",
       "^1.3.1"
+    ],
+    [
+      "unzipper",
+      "^0.12.3"
     ]
   ],
   "devDependencies": [],
@@ -117,7 +113,6 @@
       "defaults.js",
       "web.js",
       "ollama.js",
-      "transformer.js",
       "index.js",
       "base.js",
       "csv.js",
@@ -130,12 +125,15 @@
       "txt.js",
       "cosine.js",
       "folder-sync.js",
+      "ollama-setup.js",
       "pdf-embedder.js",
       "updater.js",
       "vecstore-factory.js",
       "vecstore.js",
       "package-lock.json",
       "package.json",
+      "test-auto.db",
+      "test-autosetup.db",
       "cartoon-list.html",
       "contact.html",
       "dubbed-anime-list.html",
@@ -143,8 +141,7 @@
       "movie-list.html",
       "ova-list.html",
       "subbed-anime-list.html",
-      "wcostream.html",
-      "test-gemma.db"
+      "wcostream.html"
     ],
     "configFiles": [
       ".gitignore",
@@ -171,5 +168,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759325114019
+  "lastAnalyzed": 1759328256017
 }
