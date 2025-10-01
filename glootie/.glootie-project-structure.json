@@ -139,7 +139,8 @@
       "movie-list.html",
       "ova-list.html",
       "subbed-anime-list.html",
-      "wcostream.html"
+      "wcostream.html",
+      "test-gemma.db"
     ],
     "configFiles": [
       ".gitignore",
@@ -166,5 +167,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759323599500
+  "lastAnalyzed": 1759323918405
 }
