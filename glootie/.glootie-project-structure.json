@@ -116,7 +116,6 @@
       "cli.js",
       "defaults.js",
       "web.js",
-      "gemma.js",
       "ollama.js",
       "transformer.js",
       "index.js",
@@ -172,5 +171,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759324537167
+  "lastAnalyzed": 1759325114019
 }
