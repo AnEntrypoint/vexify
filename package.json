@@ -12,11 +12,11 @@
     "scripts": {},
     "repository": {
         "type": "git",
-        "url": "https://github.com/steve-aldrin/vexify.git"
+        "url": "https://github.com/AnEntrypoint/vexify.git"
     },
-    "homepage": "https://github.com/steve-aldrin/vexify#readme",
+    "homepage": "https://github.com/AnEntrypoint/vexify#readme",
     "bugs": {
-        "url": "https://github.com/steve-aldrin/vexify/issues"
+        "url": "https://github.com/AnEntrypoint/vexify/issues"
     },
     "keywords": [
         "vector",
