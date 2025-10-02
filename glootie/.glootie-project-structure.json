@@ -32,7 +32,7 @@
     ],
     [
       "jsdom",
-      "^25.0.1"
+      "^24.1.3"
     ],
     [
       "node-html-markdown",
@@ -131,6 +131,7 @@
       "index.js",
       "base.js",
       "csv.js",
+      "dedup.js",
       "docx.js",
       "excel.js",
       "html.js",
@@ -181,5 +182,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759355443268
+  "lastAnalyzed": 1759388909323
 }
