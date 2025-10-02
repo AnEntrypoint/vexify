@@ -120,6 +120,7 @@
       "PERFORMANCE_AUDIT.md",
       "README.md",
       "cuda-keyring_1.1-1_all.deb",
+      "example.com.db",
       ".caveats.txt",
       ".glootie-project-structure.json",
       ".mcp-file-analysis-metadata.json",
@@ -184,5 +185,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759403912979
+  "lastAnalyzed": 1759410207925
 }
