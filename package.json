@@ -1,10 +1,10 @@
 {
     "name": "vexify",
-    "version": "0.14.0",
+    "version": "0.15.0",
     "description": "Portable vector database with auto-installing Ollama embeddings. Zero-config semantic search via SQLite.",
     "main": "lib/index.js",
     "bin": {
-        "vexify": "./lib/bin/cli.js"
+        "vexify": "lib/bin/cli.js"
     },
     "files": [
         "lib"
@@ -12,7 +12,7 @@
     "scripts": {},
     "repository": {
         "type": "git",
-        "url": "https://github.com/AnEntrypoint/vexify.git"
+        "url": "git+https://github.com/AnEntrypoint/vexify.git"
     },
     "homepage": "https://github.com/AnEntrypoint/vexify#readme",
     "bugs": {
@@ -30,7 +30,11 @@
         "ai",
         "machine learning",
         "rag",
-        "portable"
+        "portable",
+        "google drive",
+        "web crawler",
+        "pdf search",
+        "document processing"
     ],
     "author": "Steve Aldrin",
     "license": "MIT",
