@@ -9,3 +9,10 @@ glootie/.mcp-file-analysis-metadata.json
 IMPLEMENTATION_SUMMARY.md
 test-crawl/
 backup/cuda-keyring_1.1-1_all.deb
+
+.gdrive-sync-state.json
+.gdrive-token.json
+**/service-account*.json
+**/*-key.json
+.env
+.env.*

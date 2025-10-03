@@ -1,14 +1,17 @@
 # vecstore-js
 
-A pluggable Node.js vector database using SQLite with support for local embeddings and PDF document processing.
+A pluggable Node.js vector database using SQLite with support for Ollama embeddings, multi-format document processing, web crawling, and Google Drive sync.
 
 ## Features
 
 - 🚀 **Zero-config vector storage** using SQLite with sqlite-vec
-- 🤖 **Local embeddings** with Transformer.js (no API keys required)
-- 📄 **PDF processing** with page-level tracking and retrieval
+- 🤖 **Ollama embeddings** with auto-installation (nomic-embed-text default)
+- 📄 **Multi-format processing**: PDF, DOCX, HTML, JSON, CSV, XLSX
 - 🔍 **Semantic search** with cosine similarity
 - 💾 **Persistent storage** with better-sqlite3
+- 🌐 **Web crawler** with Playwright and text deduplication
+- ☁️ **Google Drive sync** with domain-wide delegation support
+- 🔁 **Incremental sync** - resume large syncs across multiple calls
 - 📦 **CommonJS** compatible for Node.js
 - 🔒 **Privacy-first** - all processing happens locally
 
@@ -94,6 +97,39 @@ const result = await pdfEmbedder.embedPDFPageRange(
   { pdfName: 'large-document.pdf' }
 );
 ```
+
+## CLI Usage
+
+### Quick Start
+```bash
+# Sync local folder
+npx vexify sync ./mydb.db ./documents
+
+# Search
+npx vexify query ./mydb.db "your search" 10
+
+# Crawl website
+npx vexify crawl https://docs.example.com --max-pages=100
+
+# Google Drive sync
+npx vexify gdrive ./mydb.db <folder-id> --service-account ./sa.json --impersonate admin@domain.com
+```
+
+### Incremental Google Drive Sync
+Process one file at a time, resume on next call:
+```bash
+npx vexify gdrive ./mydb.db root --service-account ./sa.json --impersonate admin@domain.com --incremental
+```
+
+See [docs/QUICK-START.md](./docs/QUICK-START.md) for complete examples.
+
+## Documentation
+
+- **[Quick Start Guide](./docs/QUICK-START.md)** - Get started in 5 minutes
+- **[Google Drive Setup](./docs/GDRIVE-SETUP.md)** - Complete auth setup guide
+- **[Implementation Summary](./docs/IMPLEMENTATION_SUMMARY.md)** - Architecture details
+- **[Performance Audit](./docs/PERFORMANCE_AUDIT.md)** - GPU optimization
+- **[Changelog](./docs/CHANGELOG.md)** - Recent updates
 
 ## API Reference
 
