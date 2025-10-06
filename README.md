@@ -14,6 +14,7 @@ A pluggable Node.js vector database using SQLite with support for Ollama embeddi
 - 🔁 **Incremental sync** - resume large syncs across multiple calls
 - 📦 **CommonJS** compatible for Node.js
 - 🔒 **Privacy-first** - all processing happens locally
+- 🔌 **MCP Server** - Integrates with Claude Code and other AI assistants
 
 ## Installation
 
@@ -123,8 +124,38 @@ npx vexify gdrive ./mydb.db root --service-account ./sa.json --impersonate admin
 
 See [docs/QUICK-START.md](./docs/QUICK-START.md) for complete examples.
 
+## MCP Server Integration
+
+Vexify includes an MCP (Model Context Protocol) server for AI agent integration. See [MCP_INTEGRATION.md](./MCP_INTEGRATION.md) for detailed setup instructions.
+
+### Quick MCP Setup
+
+1. **Start MCP server:**
+```bash
+npx vexify mcp --directory ./my-project
+```
+
+2. **Add to Claude Code** (`~/.claude/claude_desktop.json`):
+```json
+{
+  "mcpServers": {
+    "vexify": {
+      "command": "npx",
+      "args": ["vexify@latest", "mcp", "--directory", "./my-project"]
+    }
+  }
+}
+```
+
+3. **Restart Claude Code** and start searching:
+```
+"Find authentication functions in the codebase"
+"Search for database connection logic"
+```
+
 ## Documentation
 
+- **[MCP Integration Guide](./MCP_INTEGRATION.md)** - Claude Code & AI assistant setup
 - **[Quick Start Guide](./docs/QUICK-START.md)** - Get started in 5 minutes
 - **[Google Drive Setup](./docs/GDRIVE-SETUP.md)** - Complete auth setup guide
 - **[Implementation Summary](./docs/IMPLEMENTATION_SUMMARY.md)** - Architecture details
