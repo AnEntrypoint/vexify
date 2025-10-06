@@ -186,6 +186,7 @@
       "ova-list.html",
       "subbed-anime-list.html",
       "wcostream.html",
+      "test-mcp.db",
       "vexify-mcp.db"
     ],
     "configFiles": [
@@ -215,5 +216,5 @@
     "🐳 Consider adding Docker for containerization",
     "🔄 Consider adding CI/CD pipeline for automation"
   ],
-  "lastAnalyzed": 1759756951347
+  "lastAnalyzed": 1759763187269
 }
