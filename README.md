@@ -137,14 +137,11 @@ npx vexify mcp --directory . --db-path ./.vexify.db
 
 **Add to Claude Code with CLI (Recommended):**
 ```bash
-# Add vexify for current directory (local scope)
-claude mcp add vexify-local npx vexify@latest mcp --directory . --db-path ./.vexify.db
-
 # Add vexify for current directory (user scope - available everywhere)
-claude mcp add vexify npx vexify@latest mcp --directory . --db-path ./.vexify.db --scope user
+claude mcp add -s user vexify -- npx -y vexify@latest mcp --directory . --db-path ./.vexify.db
 
 # Add vexify for specific project
-claude mcp add vexify-project npx vexify@latest mcp --directory /path/to/your/project --db-path /path/to/your/project/.vexify.db --scope user
+claude mcp add -s user vexify-project -- npx -y vexify@latest mcp --directory /path/to/your/project --db-path /path/to/your/project/.vexify.db
 ```
 
 **Or create config manually:**
