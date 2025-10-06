@@ -130,21 +130,35 @@ Vexify includes an MCP (Model Context Protocol) server for AI agent integration.
 
 ### Quick MCP Setup
 
-1. **Start MCP server:**
+**For current directory:**
 ```bash
-npx vexify mcp --directory ./my-project
+npx vexify mcp --directory . --db-path ./.vexify.db
 ```
 
-2. **Add to Claude Code** (`~/.claude/claude_desktop.json`):
-```json
+**Add to Claude Code with CLI (Recommended):**
+```bash
+# Add vexify for current directory (local scope)
+claude mcp add vexify-local npx vexify@latest mcp --directory . --db-path ./.vexify.db
+
+# Add vexify for current directory (user scope - available everywhere)
+claude mcp add vexify npx vexify@latest mcp --directory . --db-path ./.vexify.db --scope user
+
+# Add vexify for specific project
+claude mcp add vexify-project npx vexify@latest mcp --directory /path/to/your/project --db-path /path/to/your/project/.vexify.db --scope user
+```
+
+**Or create config manually:**
+```bash
+mkdir -p ~/.claude && cat > ~/.claude/claude_desktop.json << 'EOF'
 {
   "mcpServers": {
     "vexify": {
       "command": "npx",
-      "args": ["vexify@latest", "mcp", "--directory", "./my-project"]
+      "args": ["vexify@latest", "mcp", "--directory", ".", "--db-path", "./.vexify.db"]
     }
   }
 }
+EOF
 ```
 
 3. **Restart Claude Code** and start searching:
