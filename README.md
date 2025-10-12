@@ -1,4 +1,4 @@
-# vecstore-js
+# vexify
 
 A pluggable Node.js vector database using SQLite with support for Ollama embeddings, multi-format document processing, web crawling, and Google Drive sync.
 
@@ -19,7 +19,7 @@ A pluggable Node.js vector database using SQLite with support for Ollama embeddi
 ## Installation
 
 ```bash
-npm install vecstore-js
+npm install vexify
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ npm install vecstore-js
 ### Basic Vector Search
 
 ```javascript
-const { VecStore, TransformerEmbedder } = require('vecstore-js');
+const { VecStore, TransformerEmbedder } = require('vexify');
 
 async function main() {
   // Create embedder with local model
@@ -58,7 +58,7 @@ const {
   VecStore,
   TransformerEmbedder,
   PDFEmbedder
-} = require('vecstore-js');
+} = require('vexify');
 
 async function pdfSearch() {
   const embedder = await TransformerEmbedder.create();
@@ -194,7 +194,7 @@ const results = await vecStore.query(query, topK);
 ### PDFReader
 
 ```javascript
-const { PDFReader } = require('vecstore-js');
+const { PDFReader } = require('vexify');
 
 const reader = new PDFReader();
 await reader.load('./document.pdf');
