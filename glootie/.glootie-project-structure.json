@@ -1,0 +1,220 @@
+{
+  "projectType": "node-library",
+  "framework": null,
+  "languages": [
+    "json",
+    "unknown",
+    "markdown",
+    "javascript",
+    "html"
+  ],
+  "buildTools": [],
+  "packageManagers": [
+    "npm"
+  ],
+  "testingFrameworks": [],
+  "dependencies": [
+    [
+      "@mozilla/readability",
+      "^0.6.0"
+    ],
+    [
+      "better-sqlite3",
+      "^12.4.1"
+    ],
+    [
+      "canvas",
+      "^3.2.0"
+    ],
+    [
+      "exceljs",
+      "^4.4.0"
+    ],
+    [
+      "googleapis",
+      "^161.0.0"
+    ],
+    [
+      "jsdom",
+      "^24.1.3"
+    ],
+    [
+      "minimatch",
+      "^10.0.3"
+    ],
+    [
+      "node-html-markdown",
+      "^1.3.0"
+    ],
+    [
+      "officeparser",
+      "^5.2.1"
+    ],
+    [
+      "papaparse",
+      "^5.5.3"
+    ],
+    [
+      "pdf-to-img",
+      "^5.0.0"
+    ],
+    [
+      "pdfjs-dist",
+      "^5.4.149"
+    ],
+    [
+      "playwright",
+      "^1.55.1"
+    ],
+    [
+      "playwright-extra",
+      "^4.3.6"
+    ],
+    [
+      "puppeteer-extra-plugin-stealth",
+      "^2.11.2"
+    ],
+    [
+      "sqlite-vec",
+      "^0.1.7-alpha.2"
+    ],
+    [
+      "tesseract.js",
+      "^6.0.1"
+    ],
+    [
+      "turndown",
+      "^7.2.1"
+    ],
+    [
+      "unpdf",
+      "^1.3.1"
+    ],
+    [
+      "unzipper",
+      "^0.12.3"
+    ]
+  ],
+  "devDependencies": [],
+  "structure": {
+    "directories": [
+      ".cache",
+      ".git",
+      ".glootie",
+      "backups",
+      "docs",
+      "glootie",
+      ".mcp-metadata",
+      "code_search_index",
+      "lib",
+      "adapters",
+      "auth",
+      "bin",
+      "config",
+      "crawlers",
+      "embedders",
+      "mcp",
+      "processors",
+      "readers",
+      "search",
+      "utils",
+      "node_modules",
+      "test-crawl",
+      "wcostream"
+    ],
+    "files": [
+      ".gdrive-sync-state.json",
+      ".gitignore",
+      ".vexify.db",
+      "LICENSE",
+      "MCP_INTEGRATION.md",
+      "README.md",
+      "CHANGELOG.md",
+      "GDRIVE-SETUP.md",
+      "IMPLEMENTATION_SUMMARY.md",
+      "PERFORMANCE_AUDIT.md",
+      "QUICK-START.md",
+      "docstudio-code.db",
+      "docstudio-functions.db",
+      "docstudio-mcp.db",
+      "docstudio-src.db",
+      "example.com.db",
+      "gdrive-coas.db",
+      "gdrive-test.db",
+      ".caveats.txt",
+      ".glootie-project-structure.json",
+      ".mcp-file-analysis-metadata.json",
+      ".mcp-init-flag.json",
+      "sqlite.js",
+      "google-drive.js",
+      "cli.js",
+      "defaults.js",
+      "code.js",
+      "gdrive.js",
+      "web.js",
+      "ollama.js",
+      "index.js",
+      "server.js",
+      "base.js",
+      "csv.js",
+      "dedup.js",
+      "docx.js",
+      "excel.js",
+      "html.js",
+      "json.js",
+      "pdf.js",
+      "registry.js",
+      "txt.js",
+      "cosine.js",
+      "sqlite-vec.js",
+      "embedding-queue.js",
+      "folder-sync.js",
+      "ignore-manager.js",
+      "ollama-setup.js",
+      "pdf-embedder.js",
+      "updater.js",
+      "vecstore-factory.js",
+      "vecstore.js",
+      "lib-code.db",
+      "package-lock.json",
+      "package.json",
+      "cartoon-list.html",
+      "contact.html",
+      "dubbed-anime-list.html",
+      "index.html",
+      "movie-list.html",
+      "ova-list.html",
+      "subbed-anime-list.html",
+      "wcostream.html",
+      "test-mcp.db",
+      "vexify-mcp.db"
+    ],
+    "configFiles": [
+      ".gdrive-sync-state.json",
+      ".gitignore",
+      ".vexify.db",
+      ".caveats.txt",
+      ".glootie-project-structure.json",
+      ".mcp-file-analysis-metadata.json",
+      ".mcp-init-flag.json",
+      "package.json"
+    ]
+  },
+  "patterns": {
+    "hasTypeScript": false,
+    "hasTests": false,
+    "hasSrcDir": false,
+    "hasPublicDir": false,
+    "monorepo": false,
+    "hasDocker": false,
+    "hasCI": false
+  },
+  "recommendations": [
+    "💡 Consider adding TypeScript for better type safety",
+    "🧪 Consider adding tests for better code quality",
+    "🔧 Consider adding a build tool like Vite or Webpack",
+    "🐳 Consider adding Docker for containerization",
+    "🔄 Consider adding CI/CD pipeline for automation"
+  ],
+  "lastAnalyzed": 1759763187269
+}
