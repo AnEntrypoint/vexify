@@ -1,6 +1,6 @@
 {
   "name": "vexify",
-  "version": "0.16.23",
+  "version": "0.16.24",
   "description": "Portable vector database with on-demand Ollama embeddings. Zero-config semantic search via SQLite.",
   "main": "lib/index.js",
   "bin": {
