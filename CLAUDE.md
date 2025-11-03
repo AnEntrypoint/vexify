@@ -71,21 +71,64 @@ Search (cosine/sqlite-vec) → Query results
 
 ## Development Commands
 
+### Local Development
+
 ```bash
-# Publish to npm (after version bump in package.json)
-npm publish
+# Link package locally for testing
+npm link
 
-# Test MCP server locally
-npx vexify mcp --directory . --db-path ./.vexify.db
+# Unlink when done
+npm unlink
 
-# Run CLI commands
-npx vexify sync ./test.db ./documents
-npx vexify query ./test.db "search term" 5
-npx vexify crawl https://example.com --max-pages 50
+# Test CLI with local changes
+vexify sync ./test.db ./documents
+vexify query ./test.db "search term" 5
+vexify crawl https://example.com --max-pages 50
 
-# Check for large/complex functions (maintenance)
-find lib -name "*.js" -exec wc -l {} \; | sort -rn | head -10
+# Test MCP server
+vexify mcp --directory . --db-path ./.vexify.db
 ```
+
+### Publishing
+
+```bash
+# Bump version in package.json (major.minor.patch)
+# Commit: "chore: bump version to X.Y.Z"
+# Then publish:
+npm publish
+```
+
+### Maintenance & Debugging
+
+```bash
+# Find large/complex functions needing refactoring
+find lib -name "*.js" -exec wc -l {} \; | sort -rn | head -10
+
+# Check file line counts during development
+wc -l lib/**/*.js
+
+# Profile slow operations
+NODE_DEBUG=vexify vexify sync ./test.db ./documents
+```
+
+## Technical Caveats
+
+**File Size**: Files >200 lines become difficult to reason about. `lib/utils/ignore-manager.js` and `lib/crawlers/web.js` are candidates for extraction.
+
+**Duplicate Logic**: `docx.js` and `excel.js` share processing patterns - changes to one should be synced to the other or extracted.
+
+**Hardcoded Values**: Configuration lives in `lib/config/defaults.js` - avoid inline values like batch sizes, retry counts, or path patterns.
+
+**Path Handling**: Use `path.resolve()` not string concatenation. Relative paths vary across CLI vs programmatic usage.
+
+**Module Structure**:
+- Entry: `lib/index.js` (exports public API)
+- CLI: `lib/bin/cli.js` (command handlers)
+- Factories: Classes like `VecStoreFactory` handle configuration/setup
+- Adapters: Storage/search implementations (pluggable)
+- Processors: Format-specific document processing
+- Crawlers: External data sources (web, Google Drive, code)
+- Utils: Shared utilities (embedding queue, folder sync, ignore patterns)
 
 ## Key Implementation Notes
 
@@ -141,9 +184,77 @@ Documents table:
 
 ## Testing & Validation
 
-- **No test files**: Manual testing via CLI commands and MCP server
-- **Ground truth only**: All test data real (PDFs from SARS, tax acts from gov.za)
-- **Verify locally**: Use `.vexify.db` in project root for development
+**Comprehensive Eval System** - Automated validation with 88 passing tests:
+- Run `node ../eval.js` from vexify root to validate all components
+- Tests cover: storage, embeddings, processors, crawlers, search, MCP, CLI, integration
+- All tests pass without external services or test data
+- See ../EVALS.md for detailed test coverage
+
+**Manual Testing** - For validation and troubleshooting:
+- Use real documents (PDFs, DOCX, CSV from actual sources, not mock data)
+- Test all format processors with problematic files they commonly fail on
+- Verify locally with `.vexify.db` in project root
+- Use `npm link` to test CLI changes in isolation
+
+**Format Processor Testing**:
+```bash
+# Test specific processor with a real file
+npx vexify sync ./test.db ./test-documents  # Contains a problematic PDF
+# Verify embedding and search work
+npx vexify query ./test.db "search term" 5
+```
+
+**Crawler Testing**:
+```bash
+# Web crawler depth/limits
+npx vexify crawl https://docs.example.com --max-pages 10 --max-depth 2
+
+# Code crawler on this repo
+npx vexify code ./test.db ./lib
+
+# Folder sync with monitoring
+npx vexify sync ./test.db ./documents
+# Add/modify files in ./documents and verify they're picked up
+```
+
+**MCP Server Testing**:
+```bash
+# Terminal 1: Start MCP server
+npx vexify mcp --directory ./test --db-path ./.vexify.db
+
+# Terminal 2: Test search via Claude Code or direct invocation
+```
+
+## Debugging Patterns
+
+### Embedding Failures
+- Check `lib/utils/embedding-queue.js` - logs failed documents with content hash
+- Verify Ollama is running: `curl http://localhost:11434/api/tags`
+- Check model exists: `ollama list` or wait for auto-pull
+- For large files: Increase batch size in `embedding-queue.js`
+
+### Processor Issues
+- Add `console.error()` statements in `lib/processors/format.js` to trace execution
+- Check dedup: search database for duplicate content via SHA-256 hash in metadata
+- Verify file path handling - use `path.resolve()` not path concatenation
+- Test with actual problematic files, not synthetic ones
+
+### Crawler Stuck/Slow
+- **Web crawler**: Check `lib/crawlers/web.js` depth limit and page limit
+- **Google Drive**: Use `--incremental` flag for large folders to process one file per call
+- **Code crawler**: Verify `.gitignore` respected in `lib/utils/ignore-manager.js`
+- Profile with `console.time()` around slow sections
+
+### Search Issues
+- Verify `sqlite-vec` extension loaded: `lib/adapters/sqlite.js` fallback to cosine
+- Check vector dimensions match embedder output (default 384 for nomic-embed-text)
+- Ensure metadata stored correctly in JSON for filtering
+- Cosine fallback significantly slower - check sqlite-vec availability
+
+### Database Corruption
+- Check SQLite schema in `lib/adapters/sqlite.js` - `id`, `content`, `embedding`, `metadata`
+- Verify no concurrent writes to same database from multiple processes
+- Delete corrupted `.db` file and resync
 
 ## Maintenance
 
@@ -228,3 +339,25 @@ Vexify is published on npm under `vexify` package name.
 4. Tag created automatically by NPM
 
 For bug fixes to lib code, use `fix:` commit prefix. Version bumps use `chore:` prefix.
+
+## Technical Gotchas
+
+**Comments in Code**: Most comments should be replaced with clearer variable/function names. When found, evaluate if the name can be more explicit.
+
+**Vector Dimension Mismatch**: Embeddings must match the model output (384 for nomic-embed-text). `lib/adapters/sqlite.js` stores as Float32Array - dimension changes require migration.
+
+**Concurrent Database Writes**: SQLite allows only one writer at a time. Multiple processes syncing to same `.db` will deadlock. Each database path should be exclusive to one process.
+
+**Playwright Memory**: Web crawler can exhaust RAM on large sites. `lib/crawlers/web.js` limits pages/depth to mitigate. Increasing limits risks OOM.
+
+**Ollama Model Pulling**: First embedding request auto-pulls model from ollama.ai (2GB+ download). Offline environments need pre-pulled models via `ollama pull nomic-embed-text`.
+
+**WSL Host Detection Timeout**: `lib/embedders/ollama.js` line 26 - execSync command for WSL gateway detection has 2000ms timeout to prevent blocking MCP server startup.
+
+**Google Drive Quota**: Service account API has quota limits. Incremental sync helps but large shared drives may still hit rate limits - space out calls.
+
+**Dedup Hash Collisions**: Content uses SHA-256 for dedup in `lib/processors/dedup.js`. Same hash = duplicate even if source differs. Unlikely but possible with content fragments.
+
+**Search Algorithm Fallback**: If sqlite-vec extension missing, falls back to cosine similarity. This is 10-100x slower and may timeout on large datasets.
+
+**File Encoding**: Processors assume UTF-8. Non-UTF-8 documents may produce garbled text or fail. PDFs with embedded fonts sometimes fail extraction.
