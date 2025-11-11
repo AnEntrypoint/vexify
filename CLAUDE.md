@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**vexify** is a portable vector database with semantic search, built on SQLite + Ollama embeddings. It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
+**vexify** is a portable vector database with semantic search, built on SQLite + vLLM/Ollama embeddings. It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
 
-**Key characteristic**: Zero-config, local-first, CommonJS-compatible. No external APIs required.
+**Key characteristic**: Zero-config, local-first, CommonJS-compatible. Supports vLLM (default) and Ollama for embeddings.
 
 ## Architecture
 
@@ -17,11 +17,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Embeddings stored as float arrays
 - Document metadata with source tracking
 
-**Embedding Layer** (`lib/embedders/ollama.js`):
-- Ollama server (auto-installed on first use)
-- Default model: nomic-embed-text (384-dim vectors)
-- Lazy-loads dependencies to avoid blocking
-- Handles retries and model pulling
+**Embedding Layer** (`lib/embedders/`):
+- `vllm.js`: vLLM embedder with OpenAI-compatible API (default provider)
+- `ollama.js`: Ollama embedder with auto-installation support
+- Default provider: vLLM (http://localhost:8000)
+- Default model: BAAI/bge-base-en-v1.5 (768-dim vectors)
+- Handles retries and connection detection
 
 **Processing Pipeline** (`lib/processors/`):
 - `base.js`: BaseProcessor abstract class
@@ -42,7 +43,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `embedding-queue.js`: Batch embedding with retry logic
 - `folder-sync.js`: Monitors local folders for changes
 - `ignore-manager.js`: Respects .gitignore, .dockerignore, custom patterns
-- `ollama-setup.js`: Auto-downloads/starts Ollama
+- `ollama-setup.js`: Auto-downloads/starts Ollama (when using Ollama provider)
 - `pdf-embedder.js`: PDF-specific embedding with page tracking
 
 **MCP Server** (`lib/mcp/server.js`):
@@ -80,9 +81,21 @@ npm link
 # Unlink when done
 npm unlink
 
-# Test CLI with local changes
+# Start vLLM server (default provider)
+python -m vllm.entrypoints.openai.api_server --model BAAI/bge-base-en-v1.5 --port 8000
+
+# OR start Ollama server
+ollama serve
+
+# Test CLI with local changes (vLLM)
 vexify sync ./test.db ./documents
 vexify query ./test.db "search term" 5
+
+# Test CLI with Ollama
+vexify sync ./test.db ./documents --provider ollama
+vexify query ./test.db "search term" 5 --provider ollama
+
+# Test web crawler
 vexify crawl https://example.com --max-pages 50
 
 # Test MCP server
@@ -131,6 +144,36 @@ NODE_DEBUG=vexify vexify sync ./test.db ./documents
 - Utils: Shared utilities (embedding queue, folder sync, ignore patterns)
 
 ## Key Implementation Notes
+
+### Embedding Providers
+
+**vLLM (default)**:
+- Default provider since v0.17.0
+- OpenAI-compatible API at `/v1/embeddings`
+- Default port: 8000
+- Default model: BAAI/bge-base-en-v1.5 (768-dim)
+- Requires external vLLM server: `python -m vllm.entrypoints.openai.api_server --model BAAI/bge-base-en-v1.5 --port 8000`
+- No auto-setup (user manages their own server)
+
+**Ollama (alternative)**:
+- Original provider, still fully supported
+- Custom API at `/api/embed`
+- Default port: 11434
+- Default model: embeddinggemma (768-dim)
+- Auto-installation support via `lib/utils/ollama-setup.js`
+- Use with `--provider ollama` flag
+
+**Switching providers**:
+```bash
+# Use vLLM (default)
+vexify sync ./test.db ./documents
+
+# Use Ollama
+vexify sync ./test.db ./documents --provider ollama
+
+# Custom host
+vexify sync ./test.db ./documents --provider vllm --host http://localhost:8000
+```
 
 ### HTML Processing (Recent Fix)
 
@@ -278,6 +321,12 @@ npx vexify mcp --directory ./test --db-path ./.vexify.db
 
 ## Recent Changes
 
+- **v0.17.0**: **BREAKING**: Migrated from Ollama to vLLM as default embedder provider
+  - Added vLLM embedder with OpenAI-compatible API
+  - vLLM now default (BAAI/bge-base-en-v1.5 model)
+  - Ollama still supported via `--provider ollama` flag
+  - Updated all CLI commands to support `--provider` and `--host` options
+  - MCP server supports both providers
 - **v0.16.27**: Fixed HTML text extraction with markdown fallback (jsdom parse5 compatibility)
 - **v0.16.26**: Auto-sync in MCP silent mode
 - **v0.16.25**: Optimized MCP server startup
