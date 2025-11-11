@@ -1,0 +1,121 @@
+{
+  "passed": true,
+  "tests": [
+    {
+      "name": "Core module structure",
+      "passed": true,
+      "details": {
+        "cliUsesFactory": true,
+        "mcpUsesFactory": true,
+        "sharedCore": true
+      }
+    },
+    {
+      "name": "CLI query implementation",
+      "passed": true,
+      "details": {
+        "hasQueryCommand": true,
+        "usesVecStore": true,
+        "callsQuery": true
+      }
+    },
+    {
+      "name": "MCP server search implementation",
+      "passed": true,
+      "details": {
+        "hasMCPClass": true,
+        "hasSearchMethod": true,
+        "usesVecStore": true,
+        "callsQuery": true
+      }
+    },
+    {
+      "name": "MCP-specific features",
+      "passed": true,
+      "details": {
+        "autoSync": true,
+        "fileMonitoring": true,
+        "backgroundIndexing": true,
+        "jsonRPC": true
+      }
+    },
+    {
+      "name": "Database path independence",
+      "passed": true,
+      "details": {
+        "cliExplicitPath": true,
+        "mcpConfigurablePath": true,
+        "mcpHasDefault": true
+      }
+    },
+    {
+      "name": "Initialization patterns",
+      "passed": true,
+      "details": {
+        "cliSynchronousCommands": true,
+        "mcpAsyncInitialization": true,
+        "mcpLazyLoading": true
+      }
+    },
+    {
+      "name": "Search invocation comparison",
+      "passed": true,
+      "details": {
+        "cli": {
+          "method": "Direct function call",
+          "entry": "CLI command: vexify query",
+          "flow": "User → CLI → VecStore.query() → Results printed to stdout",
+          "exitAfterQuery": true
+        },
+        "mcp": {
+          "method": "JSON-RPC tool call",
+          "entry": "MCP protocol: tools/call with search_code",
+          "flow": "Agent → JSON-RPC → MCPServer.search() → VecStore.query() → JSON response",
+          "persistentProcess": true
+        }
+      }
+    }
+  ],
+  "findings": [
+    "Both CLI and MCP modes use the same VecStoreFactory for core operations",
+    "CLI requires VecStoreFactory: true",
+    "MCP requires VecStoreFactory: true",
+    "CLI query command: Direct VecStore usage",
+    "  - Has query function: true",
+    "  - Creates VecStore: true",
+    "  - Calls vecStore.query(): true",
+    "MCP server search: Wrapped VecStore with sync logic",
+    "  - Has MCPServer class: true",
+    "  - Has search method: true",
+    "  - Uses vecStore instance: true",
+    "  - Calls vecStore.query(): true",
+    "MCP mode has additional features not in CLI mode:",
+    "  - Auto-sync before search: true",
+    "  - File monitoring: true",
+    "  - Background indexing: true",
+    "  - JSON-RPC protocol: true",
+    "Database path handling:",
+    "  - CLI: Requires explicit path as argument",
+    "  - MCP: Configurable via --db-path, defaults to ./.vexify.db",
+    "  - Both modes can use different databases without interference",
+    "Initialization patterns differ:",
+    "  - CLI: Synchronous command execution, blocks until complete",
+    "  - MCP: Async initialization with lazy loading",
+    "  - MCP: Returns \"initializing\" message if search called too early",
+    "Search invocation methods:",
+    "  CLI:",
+    "    - Method: Direct function call",
+    "    - Flow: User → CLI → VecStore.query() → Results printed to stdout",
+    "    - Exits after query: true",
+    "  MCP:",
+    "    - Method: JSON-RPC tool call",
+    "    - Flow: Agent → JSON-RPC → MCPServer.search() → VecStore.query() → JSON response",
+    "    - Persistent process: true"
+  ],
+  "summary": {
+    "totalTests": 7,
+    "passed": 7,
+    "failed": 0,
+    "architectureValid": true
+  }
+}
