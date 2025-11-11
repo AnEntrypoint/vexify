@@ -8,7 +8,11 @@ glootie/.caveats.txt
 glootie/.mcp-file-analysis-metadata.json
 IMPLEMENTATION_SUMMARY.md
 test-crawl/
+test-research/
 backup/cuda-keyring_1.1-1_all.deb
+
+# Test outputs
+eval/*.json
 
 .gdrive-sync-state.json
 .gdrive-token.json
