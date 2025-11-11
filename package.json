@@ -1,7 +1,7 @@
 {
   "name": "vexify",
-  "version": "0.16.28",
-  "description": "Portable vector database with on-demand Ollama embeddings. Zero-config semantic search via SQLite.",
+  "version": "0.17.0",
+  "description": "Portable vector database with vLLM or Ollama embeddings. Zero-config semantic search via SQLite.",
   "main": "lib/index.js",
   "bin": {
     "vexify": "lib/bin/cli.js"
@@ -28,7 +28,9 @@
     "vector search",
     "semantic search",
     "embeddings",
+    "vllm",
     "ollama",
+    "bge",
     "embeddinggemma",
     "sqlite",
     "ai",
