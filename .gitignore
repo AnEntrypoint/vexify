@@ -11,6 +11,9 @@ test-crawl/
 test-research/
 backup/cuda-keyring_1.1-1_all.deb
 
+# Test outputs
+eval/*.json
+
 .gdrive-sync-state.json
 .gdrive-token.json
 **/service-account*.json
