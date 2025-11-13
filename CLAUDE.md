@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**vexify** is a portable vector database with semantic search, built on SQLite + Ollama embeddings. It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
+**vexify** is a portable vector database with semantic search, built on SQLite + embedding models (vLLM or Ollama). It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
 
-**Key characteristic**: Zero-config, local-first, CommonJS-compatible. No external APIs required.
+**Key characteristic**: Zero-config, local-first, CommonJS-compatible. No external APIs required. Automatically detects and prefers vLLM when available, falls back to Ollama.
 
 ## Architecture
 
@@ -17,10 +17,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Embeddings stored as float arrays
 - Document metadata with source tracking
 
-**Embedding Layer** (`lib/embedders/ollama.js`):
-- Ollama server (auto-installed on first use)
+**Embedding Layer** (`lib/embedders/`):
+- `vllm.js`: vLLM OpenAI-compatible API (preferred, port 8000)
+- `ollama.js`: Ollama server (fallback, auto-installed, port 11434)
 - Default model: nomic-embed-text (384-dim vectors)
-- Lazy-loads dependencies to avoid blocking
+- Auto-detection: checks vLLM → Ollama → auto-setup Ollama
 - Handles retries and model pulling
 
 **Processing Pipeline** (`lib/processors/`):
@@ -71,6 +72,18 @@ Search (cosine/sqlite-vec) → Query results
 
 ## Development Commands
 
+### Using vLLM (Recommended for GPU)
+
+```bash
+# Start vLLM server (requires GPU)
+vllm serve nomic-ai/nomic-embed-text-v1.5 --port 8000
+
+# Vexify will auto-detect vLLM and use it
+vexify sync ./test.db ./documents
+```
+
+vLLM provides faster inference and better GPU utilization than Ollama. Auto-detection prefers vLLM → Ollama → auto-setup Ollama.
+
 ### Local Development
 
 ```bash
@@ -85,8 +98,12 @@ vexify sync ./test.db ./documents
 vexify query ./test.db "search term" 5
 vexify crawl https://example.com --max-pages 50
 
-# Test MCP server
+# Test MCP server (will use vLLM if available)
 vexify mcp --directory . --db-path ./.vexify.db
+
+# Force specific embedder type
+vexify sync ./test.db ./documents --embedder-type vllm
+vexify sync ./test.db ./documents --embedder-type ollama
 ```
 
 ### Publishing
@@ -278,11 +295,19 @@ npx vexify mcp --directory ./test --db-path ./.vexify.db
 
 ## Recent Changes
 
-- **v0.16.27**: Fixed HTML text extraction with markdown fallback (jsdom parse5 compatibility)
+- **v0.18.0**: vLLM support added
+  - VLLMEmbedder: OpenAI-compatible API client for vLLM servers
+  - Auto-detection: Prefers vLLM (port 8000) → Ollama (port 11434) → auto-setup Ollama
+  - Config: embedderType ('auto'|'vllm'|'ollama'), vllmHost option
+  - Benefits: vLLM offers faster inference with GPU optimization
+- **v0.17.0**: Architecture Phase 1 complete
+  - MODEL_REGISTRY: Centralized model dimensions with validation
+  - FileMonitor + IndexingState: MCPServer state extraction
+  - Metadata schema validation: Type-safe metadata
+- **v0.16.28**: Centralized all config values
+- **v0.16.27**: Fixed HTML text extraction with markdown fallback
 - **v0.16.26**: Auto-sync in MCP silent mode
 - **v0.16.25**: Optimized MCP server startup
-- **v0.16.24**: Fixed recursive file scanning in code crawler
-- **v0.16.23**: Added JavaScript support to txt processor
 
 See git log for full history.
 

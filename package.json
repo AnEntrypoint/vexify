@@ -1,7 +1,7 @@
 {
   "name": "vexify",
-  "version": "0.16.28",
-  "description": "Portable vector database with on-demand Ollama embeddings. Zero-config semantic search via SQLite.",
+  "version": "0.19.0",
+  "description": "Portable vector database with in-process ONNX embeddings. Zero-config semantic search via SQLite. No external servers required.",
   "main": "lib/index.js",
   "bin": {
     "vexify": "lib/bin/cli.js"
@@ -65,9 +65,10 @@
     "unzipper": "^0.12.3"
   },
   "optionalDependencies": {
-    "sqlite-vec-linux-x64": "^0.1.7-alpha.2",
-    "sqlite-vec-darwin-x64": "^0.1.7-alpha.2",
+    "@huggingface/transformers": "^3.7.6",
     "sqlite-vec-darwin-arm64": "^0.1.7-alpha.2",
+    "sqlite-vec-darwin-x64": "^0.1.7-alpha.2",
+    "sqlite-vec-linux-x64": "^0.1.7-alpha.2",
     "sqlite-vec-windows-x64": "^0.1.7-alpha.2"
   }
 }
