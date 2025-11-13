@@ -8,7 +8,10 @@ glootie/.caveats.txt
 glootie/.mcp-file-analysis-metadata.json
 IMPLEMENTATION_SUMMARY.md
 test-crawl/
+test-fresh-crawl/
+test-real-crawl/
 test-research/
+.vexifyignore
 backup/cuda-keyring_1.1-1_all.deb
 
 # Test outputs
