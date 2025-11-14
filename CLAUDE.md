@@ -1,351 +1,253 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
 **vexify** is a portable vector database with semantic search, built on SQLite + embedding models (vLLM, Ollama, or Transformers.js). It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
 
-**Key characteristic**: Zero-config, local-first, CommonJS-compatible. Supports vLLM (default), Ollama, and in-process ONNX embeddings via Transformers.js. No external APIs required.
+**Core Philosophy**: Zero-config, local-first, CommonJS-compatible. No external APIs. Auto-detects vLLM (GPU-optimized) → Ollama (fallback) → transformers.js (in-process ONNX, no server required) → auto-installs Ollama.
 
 ## Architecture
 
-### Core Layers
+### Core Components
 
-**Storage Layer** (`lib/adapters/sqlite.js`):
-- SQLite with sqlite-vec extension for vector operations
-- Embeddings stored as float arrays
-- Document metadata with source tracking
+**Storage** (`lib/adapters/sqlite.js`): SQLite + sqlite-vec extension, Float32 embeddings, JSON metadata
 
-**Embedding Layer** (`lib/embedders/`):
-- `vllm.js`: vLLM OpenAI-compatible API (default, port 8000)
-- `ollama.js`: Ollama server (fallback, auto-installed, port 11434)
-- `transformers.js`: In-process ONNX embeddings (no server required)
-- Default provider: vLLM (BAAI/bge-base-en-v1.5, 768-dim)
-- Auto mode: checks vLLM → Ollama → Transformers.js → auto-setup Ollama
-- Handles retries, connection detection, and model pulling
+**Embedders** (`lib/embedders/`):
+- `vllm.js`: OpenAI-compatible API, port 8000 (GPU-optimized, checked first)
+- `ollama.js`: Ollama server, port 11434 (auto-installed fallback)
+- `transformers.js`: In-process ONNX via @huggingface/transformers (no external server, ultimate fallback)
+- Auto-detection order: vLLM → Ollama → transformers.js → auto-setup Ollama
+- Default models: nomic-embed-text (Ollama/vLLM, 384-dim), Xenova/bge-base-en-v1.5 (transformers.js, 768-dim)
 
-**Processing Pipeline** (`lib/processors/`):
-- `base.js`: BaseProcessor abstract class
-- Format-specific processors: html.js, pdf.js, docx.js, excel.js, csv.js, json.js, txt.js
-- `dedup.js`: Content deduplication via SHA-256 hashing
-- Processors extract text → metadata → document chunks
+**Processors** (`lib/processors/`): BaseProcessor + format-specific (html, pdf, docx, excel, csv, json, txt), SHA-256 dedup
 
-**Crawlers** (`lib/crawlers/`):
-- `web.js`: Playwright-based web crawler with depth/page limits
-- `gdrive.js`: Google Drive sync with incremental support
-- `code.js`: Source code indexing for semantic code search
+**Crawlers** (`lib/crawlers/`): web (Playwright depth/page limits), gdrive (incremental), code (semantic indexing)
 
-**Search** (`lib/search/`):
-- `cosine.js`: Pure cosine similarity (fallback)
-- `sqlite-vec.js`: Fast vector similarity via sqlite-vec extension
+**Search** (`lib/search/`): sqlite-vec (fast) + cosine (fallback)
 
-**Utils**:
-- `embedding-queue.js`: Batch embedding with retry logic
-- `folder-sync.js`: Monitors local folders for changes
-- `ignore-manager.js`: Respects .gitignore, .dockerignore, custom patterns
-- `ollama-setup.js`: Auto-downloads/starts Ollama
-- `pdf-embedder.js`: PDF-specific embedding with page tracking
+**Utils**: embedding-queue (batching/retry), folder-sync (monitoring), ignore-manager (gitignore), ollama-setup (auto-install), pdf-embedder
 
-**MCP Server** (`lib/mcp/server.js`):
-- Implements Model Context Protocol for Claude Code
-- `search` tool: Semantic search over synced content
-- Auto-syncs before each search
-- Runs in foreground (not daemon)
+**MCP** (`lib/mcp/server.js`): Model Context Protocol search tool, auto-syncs before queries, foreground only
+
+**Module Structure**:
+- Entry: `lib/index.js` (public API)
+- CLI: `lib/bin/cli.js` (commands)
+- Factories: VecStoreFactory (config/setup)
+- Config: `lib/config/defaults.js` (centralized values)
 
 ### Data Flow
 
 ```
-Input Files/URLs
-    ↓
-Crawlers (web/gdrive/code) → Downloaded files
-    ↓
-Processors (format-specific) → Text extraction
-    ↓
-Dedup (content hashing) → Unique chunks
-    ↓
-Embedding Queue → Ollama embeddings
-    ↓
-SQLiteStorageAdapter → Vector + metadata stored
-    ↓
-Search (cosine/sqlite-vec) → Query results
+Input → Crawlers → Processors → Dedup → Embedding Queue → SQLite → Search
 ```
 
-## Development Commands
+## Quick Start & Commands
 
-### Using vLLM (Default, Recommended for GPU)
-
-```bash
-# Start vLLM server (requires GPU)
-python -m vllm.entrypoints.openai.api_server --model BAAI/bge-base-en-v1.5 --port 8000
-
-# Vexify uses vLLM by default
-vexify sync ./test.db ./documents
-vexify query ./test.db "search term" 5
-```
-
-### Using Ollama (Alternative)
+### Development
 
 ```bash
-# Start Ollama server
-ollama serve
-
-# Pull model
-ollama pull embeddinggemma
-
-# Use with --provider flag
-vexify sync ./test.db ./documents --provider ollama
-vexify query ./test.db "search term" 5 --provider ollama
-```
-
-### Using Transformers.js (No Server Required)
-
-```bash
-# Install optional dependency
-npm install @huggingface/transformers
-
-# Use with --provider flag
-vexify sync ./test.db ./documents --provider transformers
-```
-
-vLLM provides faster inference and better GPU utilization. The default is vLLM, but you can use `--provider` to switch.
-
-### Local Development
-
-```bash
-# Link package locally for testing
+# Local testing
 npm link
-
-# Unlink when done
-npm unlink
-
-# Test CLI with local changes
 vexify sync ./test.db ./documents
 vexify query ./test.db "search term" 5
 vexify crawl https://example.com --max-pages 50
-
-# Test MCP server (will use vLLM if available)
 vexify mcp --directory . --db-path ./.vexify.db
 
-# Force specific embedder type
-vexify sync ./test.db ./documents --embedder-type vllm
-vexify sync ./test.db ./documents --embedder-type ollama
+# Force specific embedder
+vexify sync ./test.db ./documents --embedder-type vllm          # or ollama, transformers
+vexify sync ./test.db ./documents --embedder-type transformers  # in-process ONNX (no server)
+
+# vLLM (faster GPU inference)
+vllm serve nomic-ai/nomic-embed-text-v1.5 --port 8000    # auto-detected first
+
+# transformers.js (in-process, no server)
+npm install @huggingface/transformers  # optional dependency, auto-detected third
+
+# Debug
+NODE_DEBUG=vexify vexify sync ./test.db ./documents
+
+# Cleanup
+npm unlink
 ```
 
 ### Publishing
 
 ```bash
-# Bump version in package.json (major.minor.patch)
+# Update package.json version (major.minor.patch)
 # Commit: "chore: bump version to X.Y.Z"
-# Then publish:
 npm publish
+# Use "fix:" prefix for bug fixes, "chore:" for version bumps
 ```
 
-### Maintenance & Debugging
+### Code Maintenance
 
 ```bash
-# Find large/complex functions needing refactoring
-find lib -name "*.js" -exec wc -l {} \; | sort -rn | head -10
-
-# Check file line counts during development
-wc -l lib/**/*.js
-
-# Profile slow operations
-NODE_DEBUG=vexify vexify sync ./test.db ./documents
+find lib -name "*.js" -exec wc -l {} \; | sort -rn | head -10  # Find large files (>200 lines)
+wc -l lib/**/*.js                                               # Check line counts
 ```
 
-## Technical Caveats
+## Critical Constraints
 
-**File Size**: Files >200 lines become difficult to reason about. `lib/utils/ignore-manager.js` and `lib/crawlers/web.js` are candidates for extraction.
+**File Size**: Keep files <200 lines. Refactor candidates: `lib/utils/ignore-manager.js`, `lib/crawlers/web.js`
 
-**Duplicate Logic**: `docx.js` and `excel.js` share processing patterns - changes to one should be synced to the other or extracted.
+**Path Handling**: ALWAYS use `path.resolve()`, never string concatenation (CLI vs programmatic usage differs)
 
-**Hardcoded Values**: Configuration lives in `lib/config/defaults.js` - avoid inline values like batch sizes, retry counts, or path patterns.
+**Database Writes**: SQLite = one writer at a time. Multiple processes → deadlock. Each DB path exclusive to one process.
 
-**Path Handling**: Use `path.resolve()` not string concatenation. Relative paths vary across CLI vs programmatic usage.
+**Vector Dimensions**: Embeddings must match model (384 for nomic-embed-text, 768 for Xenova/bge-base-en-v1.5). Changes require migration in `lib/adapters/sqlite.js`. Don't mix embedders with different dimensions on same database.
 
-**Module Structure**:
-- Entry: `lib/index.js` (exports public API)
-- CLI: `lib/bin/cli.js` (command handlers)
-- Factories: Classes like `VecStoreFactory` handle configuration/setup
-- Adapters: Storage/search implementations (pluggable)
-- Processors: Format-specific document processing
-- Crawlers: External data sources (web, Google Drive, code)
-- Utils: Shared utilities (embedding queue, folder sync, ignore patterns)
+**Memory Limits**: Playwright web crawler can OOM on large sites. Increase depth/page limits cautiously.
 
-## Key Implementation Notes
+**Offline Environments**: Ollama/vLLM auto-pull models (2GB+). Pre-install: `ollama pull nomic-embed-text`. Alternatively, use transformers.js for in-process embeddings (no server, downloads models on first use).
 
-### HTML Processing (Recent Fix)
+**WSL Detection**: `lib/embedders/ollama.js:26` has 2000ms timeout to avoid blocking MCP startup
 
-**Issue**: jsdom 27.0.1 has ES Module compatibility issue with parse5 (CJS requiring ESM).
+**Google Drive Quota**: Use `--incremental` flag for large folders (processes one file/call, stateless)
 
-**Solution** (`lib/processors/html.js`): Try Readability first, fall back to NodeHtmlMarkdown if jsdom fails:
+**Dedup**: SHA-256 content hashing in `lib/processors/dedup.js`. Same hash = duplicate regardless of source.
+
+**Search Fallback**: Missing sqlite-vec → cosine similarity (10-100x slower, may timeout on large datasets)
+
+**File Encoding**: UTF-8 assumed. Non-UTF-8 or PDFs with embedded fonts may fail extraction.
+
+**Hardcoded Values**: Configuration in `lib/config/defaults.js`. Never inline batch sizes, retry counts, paths.
+
+**Duplicate Logic**: `docx.js` and `excel.js` share patterns. Sync changes or extract shared code.
+
+**Comments**: Replace with explicit names. If name is unclear, refactor, don't comment.
+
+## Implementation Guide
+
+### HTML Processing (jsdom 27.0.1 ES Module Issue)
+
+`lib/processors/html.js` has two-stage fallback:
 ```javascript
 try {
   const dom = new JSDOM(htmlContent, { url: options.url || 'http://localhost' });
   const article = new Readability(dom.window.document).parse();
-  // Use article.content if successful
+  // Use article.content
 } catch {
-  // Fall back to markdown extraction
-  const markdown = NodeHtmlMarkdown.translate(htmlContent);
+  const markdown = NodeHtmlMarkdown.translate(htmlContent);  // Fallback
 }
 ```
+Ensures 100% HTML processing success.
 
-This ensures 100% of HTML files get processed (either via Readability or markdown fallback), not blocked by jsdom errors.
+### SQLite Schema
 
-### Embedding Queue
+```
+Documents table:
+- id (TEXT): Unique doc ID
+- content (TEXT): Full text (if storeContent=true)
+- embedding (BLOB): Float32 vector
+- metadata (JSON): {source, title, format, hash, ...}
+```
 
-`lib/utils/embedding-queue.js` batches documents for efficient Ollama calls:
-- Groups small documents for semantic cohesion
+### Adding New Format Processor
+
+1. Create `lib/processors/format.js` extending BaseProcessor
+2. Implement `process(filePath, options)` method
+3. Register in `lib/processors/index.js`
+4. Test with real problematic files (not mocks)
+
+### Embedding Queue (`lib/utils/embedding-queue.js`)
+
+- Batches documents for efficiency
+- Groups small docs for semantic cohesion
 - Retries failed embeddings
 - Tracks progress
 - Integrates with folder-sync for real-time updates
 
-### Ignore Patterns
+### Ignore Patterns (`lib/utils/ignore-manager.js`)
 
-`lib/utils/ignore-manager.js` implements universal ignore rules:
 - Loads .gitignore, .dockerignore, custom patterns
 - Used by all crawlers to skip irrelevant files
-- Critical for web crawlers (avoid crawling duplicate pages)
+- Critical for web crawlers (avoid duplicate pages)
 
-### SQLite Schema
+### Transformers.js Models (`lib/embedders/transformers.js`)
 
-Documents table:
-- `id` (TEXT): Unique doc ID
-- `content` (TEXT): Full text (if storeContent=true)
-- `embedding` (BLOB): Float32 vector
-- `metadata` (JSON): Source, title, format, hash, etc.
-- Vector similarity searches via sqlite-vec extension
+Supported in-process ONNX models:
+- `Xenova/all-MiniLM-L6-v2`: 384-dim (smallest, fastest)
+- `Xenova/bge-small-en-v1.5`: 384-dim
+- `Xenova/bge-base-en-v1.5`: 768-dim (default, balanced)
+- `Xenova/bge-large-en-v1.5`: 1024-dim (largest, most accurate)
+- `Xenova/multilingual-e5-*`: Multilingual support (384/768/1024-dim)
 
-### Google Drive Incremental Sync
+Singleton pipeline reused across embeddings for memory efficiency.
 
-`lib/crawlers/gdrive.js` with `--incremental` flag:
-- Processes ONE file per call (stateless)
-- Returns next token for resuming
-- Enables processing massive shared drives without memory issues
-- Used by SAR tax acts crawler for stability
-
-## Testing & Validation
-
-**Comprehensive Eval System** - Automated validation with 88 passing tests:
-- Run `node ../eval.js` from vexify root to validate all components
-- Tests cover: storage, embeddings, processors, crawlers, search, MCP, CLI, integration
-- All tests pass without external services or test data
-- See ../EVALS.md for detailed test coverage
-
-**Manual Testing** - For validation and troubleshooting:
-- Use real documents (PDFs, DOCX, CSV from actual sources, not mock data)
-- Test all format processors with problematic files they commonly fail on
-- Verify locally with `.vexify.db` in project root
-- Use `npm link` to test CLI changes in isolation
-
-**Format Processor Testing**:
-```bash
-# Test specific processor with a real file
-npx vexify sync ./test.db ./test-documents  # Contains a problematic PDF
-# Verify embedding and search work
-npx vexify query ./test.db "search term" 5
-```
-
-**Crawler Testing**:
-```bash
-# Web crawler depth/limits
-npx vexify crawl https://docs.example.com --max-pages 10 --max-depth 2
-
-# Code crawler on this repo
-npx vexify code ./test.db ./lib
-
-# Folder sync with monitoring
-npx vexify sync ./test.db ./documents
-# Add/modify files in ./documents and verify they're picked up
-```
-
-**MCP Server Testing**:
-```bash
-# Terminal 1: Start MCP server
-npx vexify mcp --directory ./test --db-path ./.vexify.db
-
-# Terminal 2: Test search via Claude Code or direct invocation
-```
-
-## Debugging Patterns
+## Troubleshooting
 
 ### Embedding Failures
-- Check `lib/utils/embedding-queue.js` - logs failed documents with content hash
-- Verify Ollama is running: `curl http://localhost:11434/api/tags`
-- Check model exists: `ollama list` or wait for auto-pull
-- For large files: Increase batch size in `embedding-queue.js`
+- Check logs in `lib/utils/embedding-queue.js` (content hash)
+- Verify server: `curl http://localhost:11434/api/tags` (Ollama) or `curl http://localhost:8000/health` (vLLM)
+- transformers.js: check `npm list @huggingface/transformers` (optional dependency)
+- Check model: `ollama list` or wait for auto-pull
+- Large files: increase batch size
 
 ### Processor Issues
-- Add `console.error()` statements in `lib/processors/format.js` to trace execution
-- Check dedup: search database for duplicate content via SHA-256 hash in metadata
-- Verify file path handling - use `path.resolve()` not path concatenation
-- Test with actual problematic files, not synthetic ones
+- Add `console.error()` in `lib/processors/format.js`
+- Check dedup: query DB for SHA-256 hash in metadata
+- Verify `path.resolve()` usage (not concatenation)
+- Test with actual problematic files
 
 ### Crawler Stuck/Slow
-- **Web crawler**: Check `lib/crawlers/web.js` depth limit and page limit
-- **Google Drive**: Use `--incremental` flag for large folders to process one file per call
-- **Code crawler**: Verify `.gitignore` respected in `lib/utils/ignore-manager.js`
-- Profile with `console.time()` around slow sections
+- **Web**: Check depth/page limits in `lib/crawlers/web.js`
+- **Google Drive**: Use `--incremental` flag
+- **Code**: Verify `.gitignore` respected in `lib/utils/ignore-manager.js`
+- Profile: `console.time()` around slow sections
 
 ### Search Issues
-- Verify `sqlite-vec` extension loaded: `lib/adapters/sqlite.js` fallback to cosine
-- Check vector dimensions match embedder output (default 384 for nomic-embed-text)
-- Ensure metadata stored correctly in JSON for filtering
-- Cosine fallback significantly slower - check sqlite-vec availability
+- Check sqlite-vec loaded: `lib/adapters/sqlite.js` (fallback warning)
+- Verify dimensions match embedder: 384 (nomic-embed-text), 768 (Xenova/bge-base-en-v1.5)
+- Validate metadata JSON storage
+- Cosine fallback significantly slower
 
 ### Database Corruption
-- Check SQLite schema in `lib/adapters/sqlite.js` - `id`, `content`, `embedding`, `metadata`
-- Verify no concurrent writes to same database from multiple processes
-- Delete corrupted `.db` file and resync
+- Check schema: `id`, `content`, `embedding`, `metadata`
+- Verify no concurrent writes (one process per DB)
+- Solution: delete `.db` and resync
 
-## Maintenance
+### Performance Optimization
+- Embedding queue batching: `lib/utils/embedding-queue.js`
+- Profile: `console.time()` around slow operations
+- Search: ensure sqlite-vec loaded (not cosine fallback)
 
-### Common Tasks
+## Testing
 
-**Add support for new document format**:
-1. Create `lib/processors/format.js` extending `BaseProcessor`
-2. Implement `process(filePath, options)` method
-3. Register in `lib/processors/index.js`
-4. Test with real documents of that format
+### Automated Tests (88 passing)
+```bash
+node ../eval.js  # From vexify root
+# Coverage: storage, embeddings, processors, crawlers, search, MCP, CLI, integration
+# See ../EVALS.md for details
+```
 
-**Optimize slow operations**:
-- Check embedding queue batching (embedding-queue.js)
-- Profile with `console.time()` around slow sections
-- Consider sqlite-vec vs cosine for search performance
+### Manual Testing
+```bash
+# Format processors (use real problematic files)
+npx vexify sync ./test.db ./test-documents
+npx vexify query ./test.db "search term" 5
 
-**Fix processor bugs**:
-- Isolate in `lib/processors/` file
-- Test with problematic file
-- Ensure dedup catches duplicates (SHA-256 content hash)
+# Web crawler
+npx vexify crawl https://docs.example.com --max-pages 10 --max-depth 2
 
-## Recent Changes
+# Code crawler
+npx vexify code ./test.db ./lib
 
-- **v0.18.0**: vLLM support added
-  - VLLMEmbedder: OpenAI-compatible API client for vLLM servers
-  - Auto-detection: Prefers vLLM (port 8000) → Ollama (port 11434) → auto-setup Ollama
-  - Config: embedderType ('auto'|'vllm'|'ollama'), vllmHost option
-  - Benefits: vLLM offers faster inference with GPU optimization
-- **v0.17.0**: Architecture Phase 1 complete
-  - MODEL_REGISTRY: Centralized model dimensions with validation
-  - FileMonitor + IndexingState: MCPServer state extraction
-  - Metadata schema validation: Type-safe metadata
-- **v0.16.28**: Centralized all config values
-- **v0.16.27**: Fixed HTML text extraction with markdown fallback
-- **v0.16.26**: Auto-sync in MCP silent mode
-- **v0.16.25**: Optimized MCP server startup
+# Folder sync
+npx vexify sync ./test.db ./documents  # Add/modify files to test monitoring
 
-See git log for full history.
+# MCP server
+# Terminal 1:
+npx vexify mcp --directory ./test --db-path ./.vexify.db
+# Terminal 2: Test via Claude Code
+```
 
-## MCP Integration for Developers
+Always use real documents (PDFs, DOCX, CSV from actual sources), not synthetic test data.
 
-When using Claude Code with vexify MCP:
-1. Vexify syncs the target directory before every search
-2. Searches run on latest code (respects .gitignore)
-3. Results include file paths and line numbers
-4. Supports natural language code queries
+## MCP Integration
 
-Configure in `~/.claude/claude_desktop.json`:
+Claude Code configuration (`~/.claude/claude_desktop.json`):
 ```json
 {
   "mcpServers": {
@@ -357,58 +259,41 @@ Configure in `~/.claude/claude_desktop.json`:
 }
 ```
 
+**Behavior**:
+1. Auto-syncs directory before each search
+2. Respects .gitignore
+3. Returns file paths + line numbers
+4. Supports natural language code queries
+
+## Dependencies & Deployment
+
+**Core Dependencies** (locked in package.json):
+- `better-sqlite3`: SQLite binding
+- `sqlite-vec`: Vector similarity
+- `jsdom` + `@mozilla/readability` + `node-html-markdown`: HTML processing
+- `playwright`: Web crawling
+- `pdfjs-dist`: PDF extraction
+- `exceljs` + `officeparser`: Office docs
+
+All in `dependencies` (not `devDependencies`).
+
+**Published on npm as `vexify`.**
+
 ## Performance Notes
 
-- **Embedding bottleneck**: Ollama inference speed (GPU acceleration recommended)
+- **Embedding Speed**: vLLM (fastest, GPU) > Ollama (moderate, GPU optional) > transformers.js (slowest, CPU-only ONNX)
+- **Zero-Config**: transformers.js requires no server setup, ideal for constrained environments
 - **Storage**: SQLite handles millions of vectors efficiently
-- **Search**: sqlite-vec is 10-100x faster than cosine fallback
-- **Crawling**: Playwright is memory-intensive; web crawler limits depth/pages
+- **Search**: sqlite-vec 10-100x faster than cosine
+- **Crawling**: Playwright memory-intensive, limit depth/pages
 
-## Dependencies
+## Recent Changes
 
-Core dependencies (locked in package.json):
-- `better-sqlite3`: Fast SQLite binding
-- `sqlite-vec`: Vector similarity extension
-- `jsdom`: HTML parsing (with markdown fallback)
-- `@mozilla/readability`: Article extraction
-- `node-html-markdown`: HTML → Markdown conversion
-- `playwright`: Web crawling
-- `pdfjs-dist`: PDF text extraction
-- `exceljs`: Excel processing
-- `officeparser`: DOCX parsing
+- **v0.19.1**: TransformersEmbedder singleton pipeline reuse optimization
+- **v0.19.0**: In-process ONNX embeddings via transformers.js (no external server required, ultimate fallback)
+- **v0.18.0**: vLLM support (OpenAI-compatible API, auto-detection, faster GPU inference)
+- **v0.17.0**: MODEL_REGISTRY, FileMonitor, IndexingState, metadata validation
+- **v0.16.28**: Centralized config values
+- **v0.16.27**: HTML markdown fallback for jsdom errors
 
-All dependencies are in `package.json` dependencies (not devDependencies).
-
-## Deployment
-
-Vexify is published on npm under `vexify` package name.
-
-**Publish steps**:
-1. Bump version in `package.json`
-2. Commit with message `chore: bump version to X.Y.Z`
-3. Run `npm publish`
-4. Tag created automatically by NPM
-
-For bug fixes to lib code, use `fix:` commit prefix. Version bumps use `chore:` prefix.
-
-## Technical Gotchas
-
-**Comments in Code**: Most comments should be replaced with clearer variable/function names. When found, evaluate if the name can be more explicit.
-
-**Vector Dimension Mismatch**: Embeddings must match the model output (384 for nomic-embed-text). `lib/adapters/sqlite.js` stores as Float32Array - dimension changes require migration.
-
-**Concurrent Database Writes**: SQLite allows only one writer at a time. Multiple processes syncing to same `.db` will deadlock. Each database path should be exclusive to one process.
-
-**Playwright Memory**: Web crawler can exhaust RAM on large sites. `lib/crawlers/web.js` limits pages/depth to mitigate. Increasing limits risks OOM.
-
-**Ollama Model Pulling**: First embedding request auto-pulls model from ollama.ai (2GB+ download). Offline environments need pre-pulled models via `ollama pull nomic-embed-text`.
-
-**WSL Host Detection Timeout**: `lib/embedders/ollama.js` line 26 - execSync command for WSL gateway detection has 2000ms timeout to prevent blocking MCP server startup.
-
-**Google Drive Quota**: Service account API has quota limits. Incremental sync helps but large shared drives may still hit rate limits - space out calls.
-
-**Dedup Hash Collisions**: Content uses SHA-256 for dedup in `lib/processors/dedup.js`. Same hash = duplicate even if source differs. Unlikely but possible with content fragments.
-
-**Search Algorithm Fallback**: If sqlite-vec extension missing, falls back to cosine similarity. This is 10-100x slower and may timeout on large datasets.
-
-**File Encoding**: Processors assume UTF-8. Non-UTF-8 documents may produce garbled text or fail. PDFs with embedded fonts sometimes fail extraction.
+See `git log` for full history.
