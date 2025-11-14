@@ -32,6 +32,12 @@ package-lock.json
 
 # Test crawl outputs
 test-crawl/
+test-fresh-crawl/
+test-real-crawl/
+test-research/
+
+# Test outputs
+eval/*.json
 
 # Temporary files
 *.tmp
@@ -53,3 +59,11 @@ glootie/
 # Backup files
 backup/
 *.bak
+
+# Vexify ignore file
+.vexifyignore
+
+# Removed files
+IMPLEMENTATION_SUMMARY.md
+glootie/.caveats.txt
+glootie/.mcp-file-analysis-metadata.json
