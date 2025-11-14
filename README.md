@@ -1,11 +1,12 @@
 # vexify
 
-A pluggable Node.js vector database using SQLite with support for Ollama embeddings, multi-format document processing, web crawling, and Google Drive sync.
+A pluggable Node.js vector database using SQLite with support for vLLM and Ollama embeddings, multi-format document processing, web crawling, and Google Drive sync.
 
 ## Features
 
 - 🚀 **Zero-config vector storage** using SQLite with sqlite-vec
-- 🤖 **Ollama embeddings** with auto-installation (nomic-embed-text default)
+- 🤖 **vLLM & Ollama support** - Use vLLM (default) or Ollama for embeddings
+- 🔥 **vLLM embeddings** - Fast inference with models like BAAI/bge-base-en-v1.5 (default)
 - 📄 **Multi-format processing**: PDF, DOCX, HTML, JSON, CSV, XLSX
 - 🔍 **Semantic search** with cosine similarity
 - 💾 **Persistent storage** with better-sqlite3
@@ -101,10 +102,33 @@ const result = await pdfEmbedder.embedPDFPageRange(
 
 ## CLI Usage
 
+### Prerequisites
+
+**vLLM (default, recommended):**
+```bash
+# Install vLLM
+pip install vllm
+
+# Start vLLM server with embedding model
+python -m vllm.entrypoints.openai.api_server --model BAAI/bge-base-en-v1.5 --port 8000
+```
+
+**Ollama (alternative):**
+```bash
+# Install Ollama from https://ollama.ai
+ollama serve
+
+# Pull embedding model
+ollama pull embeddinggemma
+```
+
 ### Quick Start
 ```bash
-# Sync local folder
+# Sync local folder (uses vLLM by default)
 npx vexify sync ./mydb.db ./documents
+
+# Use Ollama instead
+npx vexify sync ./mydb.db ./documents --provider ollama
 
 # Search
 npx vexify query ./mydb.db "your search" 10
@@ -112,8 +136,17 @@ npx vexify query ./mydb.db "your search" 10
 # Crawl website
 npx vexify crawl https://docs.example.com --max-pages=100
 
-# Google Drive sync
-npx vexify gdrive ./mydb.db <folder-id> --service-account ./sa.json --impersonate admin@domain.com
+# Google Drive sync with custom provider
+npx vexify gdrive ./mydb.db <folder-id> --service-account ./sa.json --impersonate admin@domain.com --provider vllm
+```
+
+### Provider Options
+```bash
+# Use vLLM (default)
+npx vexify <command> --provider vllm --host http://localhost:8000 --model BAAI/bge-base-en-v1.5
+
+# Use Ollama
+npx vexify <command> --provider ollama --host http://localhost:11434 --model embeddinggemma
 ```
 
 ### Incremental Google Drive Sync
@@ -169,7 +202,6 @@ EOF
 - **[MCP Integration Guide](./MCP_INTEGRATION.md)** - Claude Code & AI assistant setup
 - **[Quick Start Guide](./docs/QUICK-START.md)** - Get started in 5 minutes
 - **[Google Drive Setup](./docs/GDRIVE-SETUP.md)** - Complete auth setup guide
-- **[Implementation Summary](./docs/IMPLEMENTATION_SUMMARY.md)** - Architecture details
 - **[Performance Audit](./docs/PERFORMANCE_AUDIT.md)** - GPU optimization
 - **[Changelog](./docs/CHANGELOG.md)** - Recent updates
 

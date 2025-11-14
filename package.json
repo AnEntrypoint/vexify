@@ -1,7 +1,7 @@
 {
   "name": "vexify",
-  "version": "0.19.1",
-  "description": "Portable vector database with in-process ONNX embeddings. Zero-config semantic search via SQLite. No external servers required.",
+  "version": "0.20.0",
+  "description": "Portable vector database with vLLM, Ollama, or in-process ONNX embeddings. Zero-config semantic search via SQLite.",
   "main": "lib/index.js",
   "bin": {
     "vexify": "lib/bin/cli.js"
@@ -28,7 +28,11 @@
     "vector search",
     "semantic search",
     "embeddings",
+    "vllm",
     "ollama",
+    "transformers",
+    "onnx",
+    "bge",
     "embeddinggemma",
     "sqlite",
     "ai",
