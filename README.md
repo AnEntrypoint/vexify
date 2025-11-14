@@ -202,7 +202,6 @@ EOF
 - **[MCP Integration Guide](./MCP_INTEGRATION.md)** - Claude Code & AI assistant setup
 - **[Quick Start Guide](./docs/QUICK-START.md)** - Get started in 5 minutes
 - **[Google Drive Setup](./docs/GDRIVE-SETUP.md)** - Complete auth setup guide
-- **[Implementation Summary](./docs/IMPLEMENTATION_SUMMARY.md)** - Architecture details
 - **[Performance Audit](./docs/PERFORMANCE_AUDIT.md)** - GPU optimization
 - **[Changelog](./docs/CHANGELOG.md)** - Recent updates
 
