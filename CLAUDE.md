@@ -4,9 +4,9 @@ Guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
-**vexify**: Portable vector database with semantic search, built on SQLite + embedding models (vLLM/Ollama). Processes PDF, HTML, DOCX, JSON, CSV, XLSX; crawls websites; syncs Google Drive; provides MCP server for Claude Code.
+**vexify**: Portable vector database with semantic search, built on SQLite + embedding models (vLLM/Ollama/transformers.js). Processes PDF, HTML, DOCX, JSON, CSV, XLSX; crawls websites; syncs Google Drive; provides MCP server for Claude Code.
 
-**Core Philosophy**: Zero-config, local-first, CommonJS-compatible. No external APIs. Auto-detects vLLM (preferred) → Ollama (fallback) → auto-installs Ollama.
+**Core Philosophy**: Zero-config, local-first, CommonJS-compatible. No external APIs. Auto-detects vLLM (GPU-optimized) → Ollama (fallback) → transformers.js (in-process ONNX, no server required) → auto-installs Ollama.
 
 ## Architecture
 
@@ -15,9 +15,11 @@ Guidance for Claude Code when working with this repository.
 **Storage** (`lib/adapters/sqlite.js`): SQLite + sqlite-vec extension, Float32 embeddings, JSON metadata
 
 **Embedders** (`lib/embedders/`):
-- `vllm.js`: OpenAI-compatible API, port 8000 (preferred for GPU)
+- `vllm.js`: OpenAI-compatible API, port 8000 (GPU-optimized, checked first)
 - `ollama.js`: Ollama server, port 11434 (auto-installed fallback)
-- Default: nomic-embed-text (384-dim), auto-detection with retries
+- `transformers.js`: In-process ONNX via @huggingface/transformers (no external server, ultimate fallback)
+- Auto-detection order: vLLM → Ollama → transformers.js → auto-setup Ollama
+- Default models: nomic-embed-text (Ollama/vLLM, 384-dim), Xenova/bge-base-en-v1.5 (transformers.js, 768-dim)
 
 **Processors** (`lib/processors/`): BaseProcessor + format-specific (html, pdf, docx, excel, csv, json, txt), SHA-256 dedup
 
@@ -54,10 +56,14 @@ vexify crawl https://example.com --max-pages 50
 vexify mcp --directory . --db-path ./.vexify.db
 
 # Force specific embedder
-vexify sync ./test.db ./documents --embedder-type vllm   # or ollama
+vexify sync ./test.db ./documents --embedder-type vllm          # or ollama, transformers
+vexify sync ./test.db ./documents --embedder-type transformers  # in-process ONNX (no server)
 
 # vLLM (faster GPU inference)
-vllm serve nomic-ai/nomic-embed-text-v1.5 --port 8000    # auto-detected
+vllm serve nomic-ai/nomic-embed-text-v1.5 --port 8000    # auto-detected first
+
+# transformers.js (in-process, no server)
+npm install @huggingface/transformers  # optional dependency, auto-detected third
 
 # Debug
 NODE_DEBUG=vexify vexify sync ./test.db ./documents
@@ -90,11 +96,11 @@ wc -l lib/**/*.js                                               # Check line cou
 
 **Database Writes**: SQLite = one writer at a time. Multiple processes → deadlock. Each DB path exclusive to one process.
 
-**Vector Dimensions**: Embeddings must match model (384 for nomic-embed-text). Changes require migration in `lib/adapters/sqlite.js`.
+**Vector Dimensions**: Embeddings must match model (384 for nomic-embed-text, 768 for Xenova/bge-base-en-v1.5). Changes require migration in `lib/adapters/sqlite.js`. Don't mix embedders with different dimensions on same database.
 
 **Memory Limits**: Playwright web crawler can OOM on large sites. Increase depth/page limits cautiously.
 
-**Offline Environments**: First embedding auto-pulls model (2GB+). Pre-install: `ollama pull nomic-embed-text`
+**Offline Environments**: Ollama/vLLM auto-pull models (2GB+). Pre-install: `ollama pull nomic-embed-text`. Alternatively, use transformers.js for in-process embeddings (no server, downloads models on first use).
 
 **WSL Detection**: `lib/embedders/ollama.js:26` has 2000ms timeout to avoid blocking MCP startup
 
@@ -159,11 +165,23 @@ Documents table:
 - Used by all crawlers to skip irrelevant files
 - Critical for web crawlers (avoid duplicate pages)
 
+### Transformers.js Models (`lib/embedders/transformers.js`)
+
+Supported in-process ONNX models:
+- `Xenova/all-MiniLM-L6-v2`: 384-dim (smallest, fastest)
+- `Xenova/bge-small-en-v1.5`: 384-dim
+- `Xenova/bge-base-en-v1.5`: 768-dim (default, balanced)
+- `Xenova/bge-large-en-v1.5`: 1024-dim (largest, most accurate)
+- `Xenova/multilingual-e5-*`: Multilingual support (384/768/1024-dim)
+
+Singleton pipeline reused across embeddings for memory efficiency.
+
 ## Troubleshooting
 
 ### Embedding Failures
 - Check logs in `lib/utils/embedding-queue.js` (content hash)
 - Verify server: `curl http://localhost:11434/api/tags` (Ollama) or `curl http://localhost:8000/health` (vLLM)
+- transformers.js: check `npm list @huggingface/transformers` (optional dependency)
 - Check model: `ollama list` or wait for auto-pull
 - Large files: increase batch size
 
@@ -181,7 +199,7 @@ Documents table:
 
 ### Search Issues
 - Check sqlite-vec loaded: `lib/adapters/sqlite.js` (fallback warning)
-- Verify dimensions: 384 for nomic-embed-text
+- Verify dimensions match embedder: 384 (nomic-embed-text), 768 (Xenova/bge-base-en-v1.5)
 - Validate metadata JSON storage
 - Cosine fallback significantly slower
 
@@ -263,18 +281,19 @@ All in `dependencies` (not `devDependencies`).
 
 ## Performance Notes
 
-- **Bottleneck**: Ollama inference (GPU recommended). vLLM faster with better GPU utilization.
+- **Embedding Speed**: vLLM (fastest, GPU) > Ollama (moderate, GPU optional) > transformers.js (slowest, CPU-only ONNX)
+- **Zero-Config**: transformers.js requires no server setup, ideal for constrained environments
 - **Storage**: SQLite handles millions of vectors efficiently
 - **Search**: sqlite-vec 10-100x faster than cosine
 - **Crawling**: Playwright memory-intensive, limit depth/pages
 
 ## Recent Changes
 
+- **v0.19.1**: TransformersEmbedder singleton pipeline reuse optimization
+- **v0.19.0**: In-process ONNX embeddings via transformers.js (no external server required, ultimate fallback)
 - **v0.18.0**: vLLM support (OpenAI-compatible API, auto-detection, faster GPU inference)
 - **v0.17.0**: MODEL_REGISTRY, FileMonitor, IndexingState, metadata validation
 - **v0.16.28**: Centralized config values
 - **v0.16.27**: HTML markdown fallback for jsdom errors
-- **v0.16.26**: MCP auto-sync silent mode
-- **v0.16.25**: MCP server startup optimization
 
 See `git log` for full history.
