@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**vexify** is a portable vector database with semantic search, built on SQLite + embedding models (vLLM or Ollama). It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
+**vexify** is a portable vector database with semantic search, built on SQLite + embedding models (vLLM, Ollama, or Transformers.js). It processes multiple document formats (PDF, HTML, DOCX, JSON, CSV, XLSX), crawls websites, syncs Google Drive folders, and provides an MCP server for Claude Code integration.
 
-**Key characteristic**: Zero-config, local-first, CommonJS-compatible. No external APIs required. Automatically detects and prefers vLLM when available, falls back to Ollama.
+**Key characteristic**: Zero-config, local-first, CommonJS-compatible. Supports vLLM (default), Ollama, and in-process ONNX embeddings via Transformers.js. No external APIs required.
 
 ## Architecture
 
@@ -18,11 +18,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Document metadata with source tracking
 
 **Embedding Layer** (`lib/embedders/`):
-- `vllm.js`: vLLM OpenAI-compatible API (preferred, port 8000)
+- `vllm.js`: vLLM OpenAI-compatible API (default, port 8000)
 - `ollama.js`: Ollama server (fallback, auto-installed, port 11434)
-- Default model: nomic-embed-text (384-dim vectors)
-- Auto-detection: checks vLLM → Ollama → auto-setup Ollama
-- Handles retries and model pulling
+- `transformers.js`: In-process ONNX embeddings (no server required)
+- Default provider: vLLM (BAAI/bge-base-en-v1.5, 768-dim)
+- Auto mode: checks vLLM → Ollama → Transformers.js → auto-setup Ollama
+- Handles retries, connection detection, and model pulling
 
 **Processing Pipeline** (`lib/processors/`):
 - `base.js`: BaseProcessor abstract class
@@ -72,17 +73,42 @@ Search (cosine/sqlite-vec) → Query results
 
 ## Development Commands
 
-### Using vLLM (Recommended for GPU)
+### Using vLLM (Default, Recommended for GPU)
 
 ```bash
 # Start vLLM server (requires GPU)
-vllm serve nomic-ai/nomic-embed-text-v1.5 --port 8000
+python -m vllm.entrypoints.openai.api_server --model BAAI/bge-base-en-v1.5 --port 8000
 
-# Vexify will auto-detect vLLM and use it
+# Vexify uses vLLM by default
 vexify sync ./test.db ./documents
+vexify query ./test.db "search term" 5
 ```
 
-vLLM provides faster inference and better GPU utilization than Ollama. Auto-detection prefers vLLM → Ollama → auto-setup Ollama.
+### Using Ollama (Alternative)
+
+```bash
+# Start Ollama server
+ollama serve
+
+# Pull model
+ollama pull embeddinggemma
+
+# Use with --provider flag
+vexify sync ./test.db ./documents --provider ollama
+vexify query ./test.db "search term" 5 --provider ollama
+```
+
+### Using Transformers.js (No Server Required)
+
+```bash
+# Install optional dependency
+npm install @huggingface/transformers
+
+# Use with --provider flag
+vexify sync ./test.db ./documents --provider transformers
+```
+
+vLLM provides faster inference and better GPU utilization. The default is vLLM, but you can use `--provider` to switch.
 
 ### Local Development
 

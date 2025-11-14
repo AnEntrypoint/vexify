@@ -1,25 +1,69 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
+build/
+
+# Package files
 package-lock.json
+
+# Cache
 .cache/
+
+# Database files
 *.db
 *.db-*
-glootie/.caveats.txt
-glootie/.mcp-file-analysis-metadata.json
-IMPLEMENTATION_SUMMARY.md
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Google Drive sync state
+.gdrive-sync-state.json
+.gdrive-token.json
+
+# Service account and keys
+**/service-account*.json
+**/*-key.json
+
+# Environment files
+.env
+.env.*
+
+# Test crawl outputs
 test-crawl/
 test-fresh-crawl/
 test-real-crawl/
 test-research/
-.vexifyignore
-backup/cuda-keyring_1.1-1_all.deb
 
 # Test outputs
 eval/*.json
 
-.gdrive-sync-state.json
-.gdrive-token.json
-**/service-account*.json
-**/*-key.json
-.env
-.env.*
+# Temporary files
+*.tmp
+*.log
+
+# IDE and OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# Tool metadata
+glootie/
+.glootie*/
+
+# Backup files
+backup/
+*.bak
+
+# Vexify ignore file
+.vexifyignore
+
+# Removed files
+IMPLEMENTATION_SUMMARY.md
+glootie/.caveats.txt
+glootie/.mcp-file-analysis-metadata.json
